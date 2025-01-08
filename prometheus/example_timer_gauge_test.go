@@ -30,7 +30,7 @@ var funcDuration = prometheus.NewGauge(prometheus.GaugeOpts{
 })
 
 func run() error {
-	// The Set method of the Gauge is used to observe the duration.
+	// The Set method of the Gauge is used to ObserveInternal the duration.
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(funcDuration.Set))
 	defer timer.ObserveDuration()
 

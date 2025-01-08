@@ -764,15 +764,15 @@ func (h *histogram) Desc() *Desc {
 }
 
 func (h *histogram) Observe(v float64) {
-	h.observe(v, h.findBucket(v))
+	h.ObserveInternal(v, h.FindBucket(v))
 }
 
 // ObserveWithExemplar should not be called in a high-frequency setting
 // for a native histogram with configured exemplars. For this case,
 // the implementation isn't lock-free and might suffer from lock contention.
 func (h *histogram) ObserveWithExemplar(v float64, e Labels) {
-	i := h.findBucket(v)
-	h.observe(v, i)
+	i := h.FindBucket(v)
+	h.ObserveInternal(v, i)
 	h.updateExemplar(v, i, e)
 }
 
@@ -861,9 +861,9 @@ func (h *histogram) Write(out *dto.Metric) error {
 	return nil
 }
 
-// findBucket returns the index of the bucket for the provided value, or
+// FindBucket returns the index of the bucket for the provided value, or
 // len(h.upperBounds) for the +Inf bucket.
-func (h *histogram) findBucket(v float64) int {
+func (h *histogram) FindBucket(v float64) int {
 	n := len(h.upperBounds)
 	if n == 0 {
 		return 0
@@ -896,8 +896,8 @@ func (h *histogram) findBucket(v float64) int {
 	return sort.SearchFloat64s(h.upperBounds, v)
 }
 
-// observe is the implementation for Observe without the findBucket part.
-func (h *histogram) observe(v float64, bucket int) {
+// ObserveInternal is the implementation for Observe without the FindBucket part.
+func (h *histogram) ObserveInternal(v float64, bucket int) {
 	// Do not add to sparse buckets for NaN observations.
 	doSparse := h.nativeHistogramSchema > math.MinInt32 && !math.IsNaN(v)
 	// We increment h.countAndHotIdx so that the counter in the lower

@@ -22,7 +22,7 @@ type Timer struct {
 	observer Observer
 }
 
-// NewTimer creates a new Timer. The provided Observer is used to observe a
+// NewTimer creates a new Timer. The provided Observer is used to ObserveInternal a
 // duration in seconds. If the Observer implements ExemplarObserver, passing exemplar
 // later on will be also supported.
 // Timer is usually used to time a function call in the
@@ -54,7 +54,7 @@ func NewTimer(o Observer) *Timer {
 // duration is also returned. ObserveDuration is usually called with a defer
 // statement.
 //
-// Note that this method is only guaranteed to never observe negative durations
+// Note that this method is only guaranteed to never ObserveInternal negative durations
 // if used with Go1.9+.
 func (t *Timer) ObserveDuration() time.Duration {
 	d := time.Since(t.begin)
@@ -65,7 +65,7 @@ func (t *Timer) ObserveDuration() time.Duration {
 }
 
 // ObserveDurationWithExemplar is like ObserveDuration, but it will also
-// observe exemplar with the duration unless exemplar is nil or provided Observer can't
+// ObserveInternal exemplar with the duration unless exemplar is nil or provided Observer can't
 // be casted to ExemplarObserver.
 func (t *Timer) ObserveDurationWithExemplar(exemplar Labels) time.Duration {
 	d := time.Since(t.begin)

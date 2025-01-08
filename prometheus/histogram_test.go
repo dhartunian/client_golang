@@ -1468,7 +1468,7 @@ func benchmarkFindBucket(b *testing.B, l int) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		resultFindBucket = h.findBucket(v)
+		resultFindBucket = h.FindBucket(v)
 	}
 }
 
@@ -1497,7 +1497,7 @@ func BenchmarkFindBucketInf(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		resultFindBucket = h.findBucket(v)
+		resultFindBucket = h.FindBucket(v)
 	}
 }
 
@@ -1510,7 +1510,7 @@ func BenchmarkFindBucketLow(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		resultFindBucket = h.findBucket(v)
+		resultFindBucket = h.FindBucket(v)
 	}
 }
 
@@ -1538,9 +1538,9 @@ func TestFindBucket(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := tt.h.findBucket(tt.v)
+		result := tt.h.FindBucket(tt.v)
 		if result != tt.expected {
-			t.Errorf("findBucket(%v) = %d; expected %d", tt.v, result, tt.expected)
+			t.Errorf("FindBucket(%v) = %d; expected %d", tt.v, result, tt.expected)
 		}
 	}
 }

@@ -40,7 +40,7 @@ type Metric interface {
 	// Write encodes the Metric into a "Metric" Protocol Buffer data
 	// transmission object.
 	//
-	// Metric implementations must observe concurrency safety as reads of
+	// Metric implementations must ObserveInternal concurrency safety as reads of
 	// this metric may occur at any time, and any blocking occurs at the
 	// expense of total performance of rendering all registered
 	// metrics. Ideally, Metric implementations should support concurrent
