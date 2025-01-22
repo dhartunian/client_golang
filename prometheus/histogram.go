@@ -253,6 +253,13 @@ type Histogram interface {
 	Observe(float64)
 }
 
+type HistogramInternal interface {
+	Histogram
+
+	ObserveInternal(float64, int)
+	FindBucket(v float64) int
+}
+
 // bucketLabel is used for the label that defines the upper bound of a
 // bucket of a histogram ("le" -> "less or equal").
 const bucketLabel = "le"
@@ -486,7 +493,7 @@ type HistogramVecOpts struct {
 // The returned implementation also implements ExemplarObserver. It is safe to
 // perform the corresponding type assertion. Exemplars are tracked separately
 // for each bucket.
-func NewHistogram(opts HistogramOpts) Histogram {
+func NewHistogram(opts HistogramOpts) HistogramInternal {
 	return newHistogram(
 		NewDesc(
 			BuildFQName(opts.Namespace, opts.Subsystem, opts.Name),
@@ -498,7 +505,7 @@ func NewHistogram(opts HistogramOpts) Histogram {
 	)
 }
 
-func newHistogram(desc *Desc, opts HistogramOpts, labelValues ...string) Histogram {
+func newHistogram(desc *Desc, opts HistogramOpts, labelValues ...string) HistogramInternal {
 	if len(desc.variableLabels) != len(labelValues) {
 		panic(makeInconsistentCardinalityError(desc.fqName, desc.variableLabels.labelNames(), labelValues))
 	}
@@ -711,12 +718,12 @@ func (h *histogram) Desc() *Desc {
 }
 
 func (h *histogram) Observe(v float64) {
-	h.observe(v, h.findBucket(v))
+	h.ObserveInternal(v, h.FindBucket(v))
 }
 
 func (h *histogram) ObserveWithExemplar(v float64, e Labels) {
-	i := h.findBucket(v)
-	h.observe(v, i)
+	i := h.FindBucket(v)
+	h.ObserveInternal(v, i)
 	h.updateExemplar(v, i, e)
 }
 
@@ -787,9 +794,9 @@ func (h *histogram) Write(out *dto.Metric) error {
 	return nil
 }
 
-// findBucket returns the index of the bucket for the provided value, or
+// FindBucket returns the index of the bucket for the provided value, or
 // len(h.upperBounds) for the +Inf bucket.
-func (h *histogram) findBucket(v float64) int {
+func (h *histogram) FindBucket(v float64) int {
 	// TODO(beorn7): For small numbers of buckets (<30), a linear search is
 	// slightly faster than the binary search. If we really care, we could
 	// switch from one search strategy to the other depending on the number
@@ -802,8 +809,8 @@ func (h *histogram) findBucket(v float64) int {
 	return sort.SearchFloat64s(h.upperBounds, v)
 }
 
-// observe is the implementation for Observe without the findBucket part.
-func (h *histogram) observe(v float64, bucket int) {
+// ObserveInternal is the implementation for Observe without the FindBucket part.
+func (h *histogram) ObserveInternal(v float64, bucket int) {
 	// Do not add to sparse buckets for NaN observations.
 	doSparse := h.nativeHistogramSchema > math.MinInt32 && !math.IsNaN(v)
 	// We increment h.countAndHotIdx so that the counter in the lower
